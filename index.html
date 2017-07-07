@@ -1,0 +1,90 @@
+<html>
+<head>
+	<title></title>
+	<script type="text/javascript" src="./js/jquery.min.js"></script>
+	<style type="text/css">
+	textarea {
+		width:80%;
+		font-size:1.5em;
+		display:block;
+		min-height:200px;
+	}
+	button {
+		font-size:2em;
+	}
+
+	</style>
+</head>
+<body>
+<textarea id="input"></textarea>
+<button>Make me smarter!</button>
+<textarea id="output"></textarea>
+
+
+<textarea id="div1" style="display:none"></textarea>
+
+<script type="text/javascript">
+$("button").click(function() {
+    var input = $("#input").val();
+    var words = input.split(" "); //replace with regex
+
+    var output = "";
+    for(var i=0; i<words.length; i++) {
+    	getSynonym(words[i]);
+
+    	
+    }
+
+    $("#output").val(output);
+});
+
+
+function getSynonym(word) {
+	var returnvalue;
+
+	$.ajax({ 
+	  url: "http://thesaurus.altervista.org/thesaurus/v1?word="+word+"&language=en_US&output=json&key=JU4moZAJdXBs18BSkD1z", 
+
+	  success: function(data){ 
+	    if (data.length != 0) { 
+	      returnval = ""; 
+	      //construct a synonym list
+	      var newwords = [];
+
+	      for (key in data.response) { 
+	        var currentwords = data.response[key].list.synonyms.split("|");
+
+	        for(var i =0; i<currentwords.length ;i++) {
+	        	newwords.push(currentwords[i]);
+	        }
+
+	      } 
+
+	      var finallist = [];
+	      for(var i=0; i<newwords.length;i++) {
+	      	if(!newwords[i].includes("(related term)")) {
+	      		var rawword = newwords[i].split(" (")[0];
+	      		if(rawword.length>word.length) {
+	      			finallist.push(rawword);
+	      		}
+	      	}
+	      }
+
+	      returnvalue =  finallist[Math.floor(Math.random()*finallist.length)];
+
+	    } else $("#div1").html("empty data"); 
+	  }, 
+	  error: function(xhr, status, error){ 
+	    // $("#div1").html("An error occured: " + status + " " + error); 
+	    //do nothing; there is no synonym
+	    returnvalue =  word;
+	  } 
+	});
+
+$(document).ajaxStop(function () {
+	$("#output").val($("#output").val()+" "+returnvalue);
+});
+}
+</script>
+</body>
+</html>
